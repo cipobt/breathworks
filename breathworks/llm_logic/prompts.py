@@ -12,8 +12,7 @@ instruction_str = """\
 
     """
 
-new_prompt = PromptTemplate(
-    """\
+new_prompt = PromptTemplate("""\
     You are working with a pandas dataframe in Python.
     The name of the dataframe is `df`.
     This is the result of `print(df.head())`:
@@ -23,9 +22,10 @@ new_prompt = PromptTemplate(
     {instruction_str}
     Query: {query_str}
 
-    Expression: """
-)
+    Expression: """)
 
 context = """Purpose: The primary role of this agent is to assist users by providing accurate
             information about the patients in this data set who have signed up for a breathing class. The agen has
-            the choice to query the dataframe usings pandas or using it's llm capabilities to answer the question."""
+            the choice to query the dataframe usings pandas, using the breathworks meditation pdf which features
+            explanation about different types of meditations or using it's llm capabilities to answer the question.
+            """
