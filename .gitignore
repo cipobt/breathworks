@@ -1,9 +1,6 @@
 #data
 raw_data/
 
-#key
-secrets/
-
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
