@@ -29,3 +29,5 @@ new_prompt = PromptTemplate(
 context = """Purpose: The primary role of this agent is to assist users by providing accurate
             information about the patients in this data set who have signed up for a breathing class. The agen has
             the choice to query the dataframe usings pandas or using it's llm capabilities to answer the question."""
+
+
