@@ -37,39 +37,3 @@ def build_preprocessor(textual_columns, categorical_columns, datetime_columns):
     )
     return preprocessor
 
-'-------------------------------------------'
-
-# df_transformed = preprocessor.fit_transform(df_cleaned)
-# transformed_columns = textual + [col for col in df_cleaned.columns if col not in textual]
-# df_cleaned = pd.DataFrame(df_transformed, columns=transformed_columns)
-
-# transformed = pipeline.fit_transform(df_cleaned)
-# new_columns = preprocessor.get_feature_names_out()
-# df_num = pd.DataFrame(transformed, columns=new_columns)
-# df_num = df_num.apply(pd.to_numeric)
-
-
-
-# pca = PCA()
-# pca.fit(df_num)
-
-
-# pca = PCA(n_components=threhsold_pca, whiten=True)
-# pca.fit(df_num)
-# df_proj = pd.DataFrame(pca.transform(df_num))
-# df_proj
-
-# kmeans = KMeans(n_clusters = elbow_highlight, max_iter = 300)
-
-# kmeans.fit(df_proj)
-
-# labelling = kmeans.labels_
-
-# fig_scaled = px.scatter_3d(df_proj,
-#                            x = 0,
-#                            y = 1,
-#                            z = 2,
-#                            color=labelling,
-#                            width=500,
-#                            height=500)
-# fig_scaled.show()

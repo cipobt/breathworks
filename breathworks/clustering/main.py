@@ -33,7 +33,7 @@ def main():
     df_final = df_final.apply(pd.to_numeric)
     df_proj, labels = transform_data(df_final, 5, 2)
     corr_plot(df_final)
-    plot_clusters(df_proj, labels)
+    plot_clusters(df_proj, labels, 100)
 
 
 

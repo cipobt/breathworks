@@ -6,7 +6,6 @@ from sklearn.cluster import KMeans
 import plotly.express as px
 
 def transform_data(df, threshold_pca, elbow_highlight):
-    # Perform PCA
     pca = PCA(n_components=threshold_pca, whiten=True)
     pca.fit(df)
     df_proj = pd.DataFrame(pca.transform(df))
@@ -19,67 +18,32 @@ def transform_data(df, threshold_pca, elbow_highlight):
     # Return the PCA-transformed DataFrame and cluster labels
     return df_proj, labels
 
-def plot_clusters(df_proj, labels):
-    # Generate and show a 3D scatter plot of the clusters
-    fig_scaled = px.scatter_3d(df_proj,
-                               x=0,
-                               y=1,
-                               z=2,
-                               color=labels,
-                               width=500,
-                               height=500)
-    fig_scaled.show()
+
+def remove_low_variance_features(df, variance_threshold=0.1):
+    """Remove features with low variance."""
+    return df.loc[:, df.var() > variance_threshold]
+
+def remove_high_correlation_features(df, correlation_threshold=0.9):
+    corr_matrix = df.corr().abs()
+
+    upper = corr_matrix.where(np.triu(np.ones(corr_matrix.shape), k=1).astype(np.bool_))
+    to_drop = [column for column in upper.columns if any(upper[column] > correlation_threshold)]
+
+    df_reduced = df.drop(columns=to_drop)
+    return df_reduced
 
 
-# pca = PCA()
-# pca.fit(df_num)
-# threhsold_pca = 4
-# with plt.style.context('seaborn-deep'):
-#     # figsize
-#     plt.figure(figsize=(10,6))
-#     # getting axes
-#     ax = plt.gca()
-#     # plotting
-#     explained_variance_ratio_cumulated = np.cumsum(pca.explained_variance_ratio_)
-#     x_axis_ticks = np.arange(1,explained_variance_ratio_cumulated.shape[0]+1)
-#     ax.plot(x_axis_ticks,explained_variance_ratio_cumulated,label="cumulated variance ratio",color="purple",linestyle=":",marker="D",markersize=10)
-#     # customizing
-#     ax.set_xlabel('Number of Principal Components')
-#     ax.set_ylabel('% cumulated explained variance')
-#     ax.legend(loc="upper left")
-#     ax.set_title('The Elbow Method')
-#     ax.set_xticks(x_axis_ticks)
-#     ax.scatter(threhsold_pca,explained_variance_ratio_cumulated[threhsold_pca-1],c='blue',s=400)
-#     ax.grid(axis="x",linewidth=0.5)
-#     ax.grid(axis="y",linewidth=0.5)
+def label_dataframe(df, labels, new_label_column_name="label"):
+    # Ensure labels is a pandas Series
+    if not isinstance(labels, pd.Series):
+        labels = pd.Series(labels)
 
-#     pca = PCA(n_components=threhsold_pca, whiten=True)
-# pca.fit(df_num)
-# df_proj = pd.DataFrame(pca.transform(df_num))
-# df_proj
+    # Concatenate the DataFrame and the labels Series
+    df_labelled = pd.concat([df, labels], axis=1).rename(columns={0: new_label_column_name})
+    return df_labelled
 
-# fig_scaled = px.scatter_3d(df_proj, x = 0, y = 1, z = 2, opacity=0.7, width=500, height=500)
-# fig_scaled.show()
-
-
-# wcss = []
-# for K in nb_clusters_to_try:
-#     kmeans = KMeans(n_clusters = K)
-#     kmeans.fit(df_proj)
-#     wcss.append(kmeans.inertia_)
-
-
-# kmeans = KMeans(n_clusters = elbow_highlight, max_iter = 300)
-
-# kmeans.fit(df_proj)
-
-# labelling = kmeans.labels_
-
-# fig_scaled = px.scatter_3d(df_proj,
-#                            x = 0,
-#                            y = 1,
-#                            z = 2,
-#                            color=labelling,
-#                            width=500,
-#                            height=500)
-# fig_scaled.show()
+def fit_kmeans_and_label(df, n_clusters, max_iter=300):
+    kmeans = KMeans(n_clusters=n_clusters, max_iter=max_iter)
+    kmeans.fit(df)
+    labels = kmeans.labels_
+    return labels

@@ -1,57 +1,9 @@
-# # Data Manipulation
-# import numpy as np
 import pandas as pd
-# import os
-
-# # Data Visualisation
-# import matplotlib.pyplot as plt
-# import seaborn as sns
-# import plotly.express as px
-
-# # Pipeline and Column Transformers
-# from sklearn.pipeline import Pipeline
-# from sklearn.compose import ColumnTransformer
-# from sklearn import set_config
-
-# # Scaling
-# from sklearn.preprocessing import RobustScaler, StandardScaler, MinMaxScaler
-
-# # Cross Validation
-# from sklearn.model_selection import cross_validate
-# from sklearn.model_selection import cross_val_predict
-
-# # Unsupervised Learning
-# from sklearn.decomposition import PCA
-# from sklearn.cluster import KMeans
-
-# # STATISTICS
-# from statsmodels.graphics.gofplots import qqplot
-
-# Text Processing
 import string
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
-
-# # OneHotEncoder
-# from sklearn.preprocessing import OneHotEncoder
-
-# # NLTK Downloads
-# import nltk
-# nltk.download('stopwords')
-# nltk.download('punkt')
-# nltk.download('wordnet')
-# nltk.download('omw-1.4')
-
-# # Set pandas display option
-# pd.set_option('display.max_columns', None)
-
-# # Set sklearn display configuration
-# set_config(display = "diagram")
-
-# # Custom Transformers and Model Building
-# from sklearn.base import BaseEstimator, TransformerMixin
 
 
 def clean_data(df,dropping):
@@ -64,9 +16,18 @@ def clean_data(df,dropping):
 
     return df_cleaned
 
-
 def clean_text(text):
         text = str(text)
+
+
+        phrases_to_blank = [
+        "No, currently I don't identify as having a chronic pain condition.",
+        "Yes, I have experienced persistent pain that has lasted for at least the last 3 months."
+        ]
+        for specific_phrase in phrases_to_blank:
+            text = text.replace(specific_phrase, ' ')
+
+
         for punctuation in string.punctuation:
             text = text.replace(punctuation, ' ')  # Remove Punctuation
         lowercased = text.lower()  # Lower Case
@@ -74,16 +35,41 @@ def clean_text(text):
         words_only = [word for word in tokenized if word.isalpha()]  # Remove numbers
 
         stop_words = set(stopwords.words('english'))
-        stop_words.update(['yes','none','nan'])
+        stop_words.update(['none','nan'])
 
         without_stopwords = [word for word in words_only if not word in stop_words]  # Remove Stop Words
-        lemma = WordNetLemmatizer()  # Initiate Lemmatizer
-        lemmatized = [lemma.lemmatize(word) for word in without_stopwords]  # Lemmatize
+
+        # lemma = WordNetLemmatizer()  # Initiate Lemmatizer
+        # lemmatized = [lemma.lemmatize(word) for word in without_stopwords]  # Lemmatize
+        lemmatized = lem_complete(without_stopwords)
         cleaned = ' '.join(lemmatized)  # Join back to a string
         return cleaned
-
 
 def clean_textual_columns(df, textual_columns):
     for col in textual_columns:
         df[col] = df[col].apply(clean_text)
     return df
+
+def lem_complete(sentence):
+    verb_lemmatized = [
+            WordNetLemmatizer().lemmatize(word, pos = "v") # v --> verbs
+            for word in sentence
+    ]
+
+    # 2 - Lemmatizing the nouns
+    noun_lemmatized = [
+        WordNetLemmatizer().lemmatize(word, pos = "n") # n --> nouns
+        for word in verb_lemmatized
+    ]
+
+    adj_lemmatized = [
+        WordNetLemmatizer().lemmatize(word, pos = "a")
+        for word in noun_lemmatized
+    ]
+
+    # adv_lemmatized=[
+    #     WordNetLemmatizer().lemmatize(word, pos = "adv")
+    #     for word in adj_lemmatized
+    # ]
+
+    return adj_lemmatized
