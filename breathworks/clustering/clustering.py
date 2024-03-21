@@ -49,7 +49,6 @@ def fit_kmeans_and_label(df, n_clusters, max_iter=300):
     kmeans.fit(df)
     labels = kmeans.labels_
     return labels
-#df2 dffinal
 
 def plot_lda(df2,column_pairs):
     fig = make_subplots(rows=1, cols=len(column_pairs),

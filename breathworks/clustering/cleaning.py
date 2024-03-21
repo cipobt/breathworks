@@ -19,13 +19,26 @@ def clean_data(df,dropping):
 def clean_text(text):
         text = str(text)
 
-
-        phrases_to_blank = [
-        "No, currently I don't identify as having a chronic pain condition.",
-        "Yes, I have experienced persistent pain that has lasted for at least the last 3 months."
+        phrases_to_blank_neg = [
+        "Yes, I have experienced persistent pain that has lasted for at least the last 3 months.",
         ]
-        for specific_phrase in phrases_to_blank:
-            text = text.replace(specific_phrase, ' ')
+        for specific_phrase in phrases_to_blank_neg:
+            text = text.replace(specific_phrase, 'persistent pain for 3 months')
+
+        phrases_to_blank_pos = [
+        "No, currently I don't identify as having a chronic pain condition.",
+        "I don't experience acute or debilitating depression or any other mental health condition.",
+        ]
+        for specific_phrase in phrases_to_blank_pos:
+            text = text.replace(specific_phrase, 'none')
+
+        phrases_to_blank_neu = [
+        "asdfasdf",
+        "asdf",
+        "fbds",
+        ]
+        for specific_phrase in phrases_to_blank_neu:
+            text = text.replace(specific_phrase, '')
 
 
         for punctuation in string.punctuation:
@@ -35,9 +48,10 @@ def clean_text(text):
         words_only = [word for word in tokenized if word.isalpha()]  # Remove numbers
 
         stop_words = set(stopwords.words('english'))
-        stop_words.update(['none','nan'])
+        stop_words.update(['none','nan','yes','feel','get','take','since','like','would','way','also','year','want'])
 
         without_stopwords = [word for word in words_only if not word in stop_words]  # Remove Stop Words
+
 
         # lemma = WordNetLemmatizer()  # Initiate Lemmatizer
         # lemmatized = [lemma.lemmatize(word) for word in without_stopwords]  # Lemmatize
@@ -67,9 +81,9 @@ def lem_complete(sentence):
         for word in noun_lemmatized
     ]
 
-    # adv_lemmatized=[
-    #     WordNetLemmatizer().lemmatize(word, pos = "adv")
-    #     for word in adj_lemmatized
-    # ]
+    adv_lemmatized=[
+        WordNetLemmatizer().lemmatize(word, pos = "r")
+        for word in adj_lemmatized
+    ]
 
-    return adj_lemmatized
+    return adv_lemmatized
