@@ -5,7 +5,7 @@ import pandas as pd
 def splitting_into_topics(df, topics_per_col, textual_columns):
 
     for text in textual_columns:
-        vect = TfidfVectorizer(max_df = 0.95, ngram_range=(1,2))
+        vect = TfidfVectorizer(max_df = 0.85, ngram_range=(2,3))
         X = vect.fit_transform(df[text])
 
         num_topics = topics_per_col[text]

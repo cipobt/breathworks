@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
 import plotly.express as px
+from plotly.subplots import make_subplots
+import plotly.graph_objects as go
 
 def transform_data(df, threshold_pca, elbow_highlight):
     pca = PCA(n_components=threshold_pca, whiten=True)
@@ -47,3 +49,26 @@ def fit_kmeans_and_label(df, n_clusters, max_iter=300):
     kmeans.fit(df)
     labels = kmeans.labels_
     return labels
+#df2 dffinal
+
+def plot_lda(df2,column_pairs):
+    fig = make_subplots(rows=1, cols=len(column_pairs),
+                        subplot_titles=[f'{col1} vs {col2}' for col1, col2 in column_pairs])
+
+    for i, (col1, col2) in enumerate(column_pairs, start=1):
+        df = df2[[col1, col2]]
+        labelling = fit_kmeans_and_label(df, 4)
+        df_labeled = label_dataframe(df, labelling, "Cluster")
+
+        # Plot
+        for label in df_labeled['Cluster'].unique():
+            cluster_df = df_labeled[df_labeled['Cluster'] == label]
+            fig.add_trace(
+                go.Scatter(x=cluster_df[col1], y=cluster_df[col2],
+                        mode='markers', name=f'Cluster {label}',
+                        marker=dict(size=12, line=dict(width=2))),
+                row=1, col=i
+            )
+
+    fig.update_layout(height=600, width=600*len(column_pairs), title_text="Cluster Plots Side by Side")
+    fig.show()
