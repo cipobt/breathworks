@@ -10,9 +10,10 @@ def get_data(table_id):
     client = bigquery.Client()
 
     query = f'SELECT * FROM `{PROJECT_ID}.{DATASET_ID}.{table_id}`'
+    
     query_job = client.query(query)
     df = query_job.to_dataframe()
-
+    # print(query)
     return df
 
 if __name__ == "__main__":
