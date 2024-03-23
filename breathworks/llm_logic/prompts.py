@@ -66,9 +66,8 @@ prompt_templates = {
 
 context = """Purpose: The primary role of this agent is to assist users by providing accurate
 information about the clients in this data set who have signed up for a breathing class. The agent has
-the choice to query the dataframe usings pandas, using the breathworks meditation pdf which features
-explanations about different types of meditations or using it's llm capabilities to answer the question.
-When asked about about data from the data frame which refers to the history or motivation column, use the `query_engine_llm` query engine.
+the choice to to the breathworks meditation pdf which features explanations about different types of meditations or using it's llm capabilities to answer the question.
+When asked about about data from the data frame which refers to the history or motivation column, it should use the `query_engine_llm` query engine.
 """
 
 prompt_template_df = prompt_templates.get('instruction_str_pandas')
