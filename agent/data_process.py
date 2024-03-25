@@ -11,7 +11,7 @@ sys.path.append(project_root)
 # Import after adjusting sys.path
 from breathworks.utils import get_data
 
-def fetch_and_process_data() -> pd.DataFrame:
+def get_data() -> pd.DataFrame:
     """
     Fetches data using the breathworks utility and processes it for the AI model.
     You can implement any required processing steps here. For example, filtering, cleaning, etc.
