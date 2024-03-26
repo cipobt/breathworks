@@ -6,7 +6,7 @@ from pathlib import Path
 # Local Files
 from helpers import get_index
 from preprocessing import clean
-from param import   ANTHROPIC_API_KEY,file_path_new_final
+from param import ANTHROPIC_API_KEY,file_path_new_final
 from prompts import instruction_str_pandas, instruction_str_llm, context, prompt_template_pandas, prompt_template_llm
 from breathworks.utils import get_data
 
@@ -100,14 +100,19 @@ def main (agent,df):
             # Access the tool_name attribute of each ToolOutput object
             tool_name = source.tool_name
             print("Tool Name:", tool_name)
-            raw_output = source.raw_output
-            pandas_instruction_str = raw_output.metadata['pandas_instruction_str']
-            fig, ax = plt.subplots()
-            fig = exec(pandas_instruction_str)
-            fig = plt.gcf()
-        st.write(response.response)
-        st.pyplot(fig)
-        agent.reset()
+            if tool_name=='pandas_query_engine':
+                raw_output = source.raw_output
+                pandas_instruction_str = raw_output.metadata['pandas_instruction_str']
+                fig, ax = plt.subplots()
+                fig = exec(pandas_instruction_str)
+                fig = plt.gcf()
+                st.write(response.response)
+                st.pyplot(fig)
+                agent.reset()
+            else:
+                st.write(response.response)
+                agent.reset()
+
 
 if __name__ == "__main__":
     agent,df = initialise()
