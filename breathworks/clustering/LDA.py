@@ -8,7 +8,7 @@ pyLDAvis.enable_notebook()
 def splitting_into_topics(df, topics_per_col, textual_columns):
     lda_details = {}
     for text in textual_columns:
-        vect = TfidfVectorizer(max_df=0.95, min_df=25, use_idf=True, ngram_range=(1,2))
+        vect = TfidfVectorizer(max_df=0.95, min_df=7, ngram_range=(1,3))
         X = vect.fit_transform(df[text])
 
         num_topics = topics_per_col[text]

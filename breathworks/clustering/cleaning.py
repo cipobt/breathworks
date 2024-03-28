@@ -32,14 +32,6 @@ def clean_text(text):
         for specific_phrase in phrases_to_blank_pos:
             text = text.replace(specific_phrase, 'none')
 
-        phrases_to_blank_neu = [
-        "asdfasdf",
-        "asdf",
-        "fbds",
-        ]
-        for specific_phrase in phrases_to_blank_neu:
-            text = text.replace(specific_phrase, '')
-
 
         for punctuation in string.punctuation:
             text = text.replace(punctuation, ' ')  # Remove Punctuation
@@ -52,11 +44,9 @@ def clean_text(text):
 
         without_stopwords = [word for word in words_only if not word in stop_words]  # Remove Stop Words
 
-
-        # lemma = WordNetLemmatizer()  # Initiate Lemmatizer
-        # lemmatized = [lemma.lemmatize(word) for word in without_stopwords]  # Lemmatize
         lemmatized = lem_complete(without_stopwords)
-        cleaned = ' '.join(lemmatized)  # Join back to a string
+        more_than_two_letters = [word for word in lemmatized if len(word) > 2]
+        cleaned = ' '.join(more_than_two_letters)
         return cleaned
 
 def clean_textual_columns(df, textual_columns):
@@ -65,25 +55,58 @@ def clean_textual_columns(df, textual_columns):
     return df
 
 def lem_complete(sentence):
-    verb_lemmatized = [
-            WordNetLemmatizer().lemmatize(word, pos = "v") # v --> verbs
-            for word in sentence
-    ]
-
-    # 2 - Lemmatizing the nouns
-    noun_lemmatized = [
-        WordNetLemmatizer().lemmatize(word, pos = "n") # n --> nouns
-        for word in verb_lemmatized
-    ]
-
-    adj_lemmatized = [
-        WordNetLemmatizer().lemmatize(word, pos = "a")
-        for word in noun_lemmatized
-    ]
-
-    adv_lemmatized=[
-        WordNetLemmatizer().lemmatize(word, pos = "r")
-        for word in adj_lemmatized
-    ]
-
+    # Lemmatize words considering their part of speech
+    verb_lemmatized = [WordNetLemmatizer().lemmatize(word, pos="v") for word in sentence]  # v --> verbs
+    noun_lemmatized = [WordNetLemmatizer().lemmatize(word, pos="n") for word in verb_lemmatized]  # n --> nouns
+    adj_lemmatized = [WordNetLemmatizer().lemmatize(word, pos="a") for word in noun_lemmatized]  # a --> adjectives
+    adv_lemmatized = [WordNetLemmatizer().lemmatize(word, pos="r") for word in adj_lemmatized]  # r --> adverbs
     return adv_lemmatized
+
+
+def cleaning_advanced(column, words_to_remove):
+  processed_column = []
+  for sentence in column:
+    new_sentence = []
+    str_sentence = str(sentence)
+    words_list = str_sentence.split()
+    for x in words_list:
+      if x not in words_to_remove:
+        new_sentence.append(x)
+    processed_sentence = ' '.join(new_sentence)
+    processed_column.append(processed_sentence)
+
+  return processed_column
+
+
+def cleaning_advanced_2(df, columns, words_to_remove):
+    # Iterate over each specified column
+    for column in columns:
+        processed_column = []
+        # Iterate over each sentence in the column
+        for sentence in df[column]:
+            new_sentence = []
+            str_sentence = str(sentence)
+            words_list = str_sentence.split()
+            # Remove specified words
+            for word in words_list:
+                if word not in words_to_remove:
+                    new_sentence.append(word)
+            processed_sentence = ' '.join(new_sentence)
+            processed_column.append(processed_sentence)
+        # Update the DataFrame column with cleaned data
+        df[column] = processed_column
+    return df
+
+def cleaning_advanced_column(column, words_to_remove):
+  processed_column = []
+  for sentence in column:
+    new_sentence = []
+    str_sentence = str(sentence)
+    words_list = str_sentence.split()
+    for x in words_list:
+      if x not in words_to_remove:
+        new_sentence.append(x)
+    processed_sentence = ' '.join(new_sentence)
+    processed_column.append(processed_sentence)
+
+  return processed_column

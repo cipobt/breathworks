@@ -36,4 +36,3 @@ def build_preprocessor(textual_columns, categorical_columns, datetime_columns):
         remainder='passthrough'
     )
     return preprocessor
-
