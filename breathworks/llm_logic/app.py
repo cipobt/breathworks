@@ -5,27 +5,22 @@ from pathlib import Path
 
 # Local Files
 from helpers import get_index
-from preprocessing import clean
 from param import ANTHROPIC_API_KEY,file_path_new_final
-from prompts import instruction_str_pandas, instruction_str_llm, context, prompt_template_pandas, prompt_template_llm
+from prompts import instruction_str_pandas, instruction_str_llm, context, prompt_template_llm
 from breathworks.utils import get_data
 
 # Third part packages
-import pandas as pd
 import streamlit as st
 from llama_index.core import Settings
 from llama_index.core.agent import ReActAgent
 from llama_index.llms.anthropic import Anthropic
 from llama_index.readers.file import  CSVReader
 from llama_index.core.query_engine import PandasQueryEngine
-from llama_index.core.tools import FunctionTool, QueryEngineTool, ToolMetadata
+from llama_index.core.tools import  QueryEngineTool, ToolMetadata
+from llama_index.legacy.agent.react.output_parser import ReActOutputParser
+
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 import matplotlib.pyplot as plt
-
-# TODO
-# Review the prompts - we saw some of the prompts should be formatting and adding in an actual query but they aren't = new_prompt
-# Looking at the get_index function - doesn't always find the local index
-
 
 @st.cache_resource()
 def initialise():
@@ -85,17 +80,14 @@ def initialise():
     '''
     # Breathworks Website
     '''
-    return agent, df
+    return agent
 
 
-def main (agent,df):
+def main (agent):
     prompt = st.text_input('Prompt')
-    # prompt = 'plot a chart of clients by gender'
-    df=df
+    # prompt = 'top motivation to join the classes'
     if prompt:
-        print (prompt)
         response = agent.chat(prompt)
-        print(response)
         for source in response.sources:
             # Access the tool_name attribute of each ToolOutput object
             tool_name = source.tool_name
@@ -115,5 +107,5 @@ def main (agent,df):
 
 
 if __name__ == "__main__":
-    agent,df = initialise()
-    main(agent,df)
+    agent = initialise()
+    main(agent)
