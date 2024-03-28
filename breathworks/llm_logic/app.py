@@ -5,32 +5,27 @@ from pathlib import Path
 
 # Local Files
 from helpers import get_index
-from preprocessing import clean
-from param import pdf_file_path, file_path, ANTHROPIC_API_KEY
-from prompts import instruction_str_pandas, instruction_str_llm, instruction_str_pdf, context, prompt_template_df, prompt_template_llm, prompt_template_pdf
+from param import ANTHROPIC_API_KEY,file_path_new_final
+from prompts import instruction_str_pandas, instruction_str_llm, context, prompt_template_llm
+from breathworks.utils import get_data
 
 # Third part packages
-import pandas as pd
 import streamlit as st
+from llama_index.core import Settings
 from llama_index.core.agent import ReActAgent
 from llama_index.llms.anthropic import Anthropic
-from llama_index.readers.file import PDFReader, CSVReader
+from llama_index.readers.file import  CSVReader
 from llama_index.core.query_engine import PandasQueryEngine
-from llama_index.core import Settings, SimpleDirectoryReader
-from llama_index.core.tools import FunctionTool, QueryEngineTool, ToolMetadata
+from llama_index.core.tools import  QueryEngineTool, ToolMetadata
+from llama_index.legacy.agent.react.output_parser import ReActOutputParser
+
 from llama_index.embeddings.huggingface import HuggingFaceEmbedding
-
-
-# TODO
-# Review the prompts - we saw some of the prompts should be formatting and adding in an actual query but they aren't = new_prompt
-# Looking at the get_index function - doesn't always find the local index
-
+import matplotlib.pyplot as plt
 
 @st.cache_resource()
 def initialise():
-    df = pd.read_csv(file_path)
-    df.Motivation = df.Motivation.fillna('')
-    df['clean_text'] = df.Motivation
+    df = get_data('final_set')
+    df.CustomerPurpose  = df.CustomerPurpose.fillna('')
     llm = Anthropic(model="claude-3-opus-20240229")
     Settings.llm = Anthropic(model="claude-3-opus-20240229",api_key=ANTHROPIC_API_KEY)
     # Initial huggingface as embedding model
@@ -39,48 +34,26 @@ def initialise():
     tokenizer = Anthropic().tokenizer
     Settings.tokenizer = tokenizer
 
-    # Load documents and create indexes
-    documents = CSVReader().load_data(Path('data/df_head.csv'))
-    pdf_documents = PDFReader().load_data(Path(pdf_file_path))
+    # Output and reload Load documents and create indexes
+    df.to_csv(file_path_new_final)
+    documents = CSVReader().load_data(Path(file_path_new_final))
 
 
     df_index = get_index(documents,'df_index',llm=llm)
-    pdf_index = get_index(pdf_documents,'pdf_index',llm=llm)
 
     # Create query engines
-    df_query_engine = PandasQueryEngine(df=df.head(),verbose=True,instruction_str=instruction_str_pandas)
+    pandas_query_engine = PandasQueryEngine(df=df,verbose=True,instruction_str=instruction_str_pandas)
     query_engine_llm = df_index.as_query_engine(llm=llm,instruction_str=instruction_str_llm)
-    query_engine_pdf = pdf_index.as_query_engine(llm=llm, instruction_str=instruction_str_pdf)
 
     # Create prompt templates with updated prompts
 
-    df_query_engine.update_prompts({
-    "pandas_prompt": prompt_template_df
-    })
+    # pandas_query_engine.update_prompts({
+    # "pandas_prompt": prompt_template_pandas
+    # })
 
     # Update prompts for query_engine_llm
     query_engine_llm.update_prompts({
         "llm_prompt": prompt_template_llm
-    })
-
-    # Update prompts for query_engine_pdf
-    query_engine_pdf.update_prompts({
-        "pdf_prompt": prompt_template_pdf
-    })
-
-    # Update prompts for df_query_engine
-    df_query_engine.update_prompts({
-    "pandas_prompt": prompt_template_df
-    })
-
-    # Update prompts for query_engine_llm
-    query_engine_llm.update_prompts({
-        "llm_prompt": prompt_template_llm
-    })
-
-    # Update prompts for query_engine_pdf
-    query_engine_pdf.update_prompts({
-        "pdf_prompt": prompt_template_pdf
     })
 
 
@@ -88,21 +61,21 @@ def initialise():
         QueryEngineTool(
             query_engine=query_engine_llm,
             metadata=ToolMetadata(
-                name="llm_data",
+                name="llm_query_engine",
                 description="This queries the llm to answer text style questions",
             ),
         ),
         QueryEngineTool(
-            query_engine=query_engine_pdf,
+            query_engine=pandas_query_engine,
             metadata=ToolMetadata(
-                name="pdf_br_data",
-                description="This checks the breathworks pdf document about meditation types",
+                name="pandas_query_engine",
+                description="This creates plots using pandas",
             ),
         )
     ]
 
     llm = Anthropic(model="claude-3-opus-20240229")
-    agent = ReActAgent.from_tools(tools, llm=llm, verbose=True)
+    agent = ReActAgent.from_tools(tools, llm=llm, verbose=True,context=context,max_iterations=5)
 
     '''
     # Breathworks Website
@@ -112,18 +85,25 @@ def initialise():
 
 def main (agent):
     prompt = st.text_input('Prompt')
-    # prompt = 'what is the number 1 reason in 1 word why people join the class?'
+    # prompt = 'top motivation to join the classes'
     if prompt:
-        response = agent.query(prompt)
-        print(response)
-        # for source in response.sources:
-        #     content = source.content
-        #     tool_name = source.tool_name
-
-        #     raw_input = source.raw_input['input']  # Assuming raw_input is a dictionary attribute
-        #     raw_output_response = source.raw_output.response  # As
-
-        st.write(response.response)
+        response = agent.chat(prompt)
+        for source in response.sources:
+            # Access the tool_name attribute of each ToolOutput object
+            tool_name = source.tool_name
+            print("Tool Name:", tool_name)
+            if tool_name=='pandas_query_engine':
+                raw_output = source.raw_output
+                pandas_instruction_str = raw_output.metadata['pandas_instruction_str']
+                fig, ax = plt.subplots()
+                fig = exec(pandas_instruction_str)
+                fig = plt.gcf()
+                st.write(response.response)
+                st.pyplot(fig)
+                agent.reset()
+            else:
+                st.write(response.response)
+                agent.reset()
 
 
 if __name__ == "__main__":
