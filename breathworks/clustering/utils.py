@@ -23,7 +23,7 @@ def go_to_data(file_name):
     parent_dir = os.path.dirname(current_dir)
 
     # Construct the path to the target directory 'raw_data'
-    target_dir = os.path.join(parent_dir, 'breathworks/raw_data')
+    target_dir = os.path.join(parent_dir, 'raw_data')
 
     # create the dataframe
     file_path = os.path.join(target_dir, file_name)
